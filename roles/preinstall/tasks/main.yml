@@ -1,0 +1,24 @@
+---
+# tasks file for preinstall
+- name: Update apt package cache and upgrade packages
+  apt:
+    update_cache: yes
+    upgrade: yes
+
+- name: Install Redis Server
+  apt:
+    name: redis-server
+    state: present
+
+- name: Install Redis Sentinel
+  apt:
+    name: redis-sentinel
+    state: present
+
+- name: Stop sentinel service
+  systemd:
+    name: sentinel
+    state: stopped
+    enabled: no
+  ignore_errors: true
+  when: ansible.systemd.services['sentinel.service'].state == 'running'

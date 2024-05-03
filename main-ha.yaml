@@ -1,0 +1,4 @@
+- hosts: ha
+  roles:
+    - role: preinstall
+  gather_facts: yes

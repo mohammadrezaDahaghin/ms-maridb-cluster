@@ -1,0 +1,4 @@
+# group_vars/all.yaml
+ansible_user: mrdex
+ansible_port: 22
+

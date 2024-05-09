@@ -9,3 +9,63 @@
   apt:
     name: mariadb-server
     state: present
+  when: mariadb_status is defined and mariadb_status.changed
+
+- name: Check if mariadb service is active
+  async: 10
+  poll: 0
+  ansible.builtin.systemd_service:
+    name: mariadb
+    state: started
+    enabled: true
+  register: mariadb_me
+
+- name: Wait for mariadb service status check to complete
+  async_status:
+    jid: "{{ mariadb_me.ansible_job_id }}"
+  register: mariadb_status_result
+  until: mariadb_status_result.finished
+  retries: 2
+  delay: 2
+
+- name: Check if 50-server.cnf exists
+  stat:
+    path: /etc/mysql/mariadb.conf.d/50-server.cnf
+  register: server_config
+
+- name: Print the result
+  debug:
+    msg: "The 50-server.cnf file {{ 'exists' if server_config.stat.exists else 'does not exist' }}"
+
+- name: Get IP address of ens37 interface
+  shell: "ip addr show ens37 | grep -Po 'inet \\K[\\d.]+'"
+  register: ens37_ip_result
+  changed_when: false
+  check_mode: no
+
+- set_fact:
+    ens37_ip: "{{ ens37_ip_result.stdout }}"
+  when: ens37_ip_result.stdout is defined
+
+- name: Print the IP address of ens37 interface
+  debug:
+    var: ens37_ip
+
+- name: Replace bind-address in MariaDB config file
+  replace:
+    path: /etc/mysql/mariadb.conf.d/50-server.cnf
+    regexp: 'bind-address            =\s*.*'
+    replace: 'bind-address      ={{ ens37_ip }}'
+
+- name: Add additional configurations to MariaDB config file
+  ansible.builtin.lineinfile:
+    path: /etc/mysql/mariadb.conf.d/50-server.cnf
+    line: "{{ item }}"
+    insertafter: EOF
+  loop:
+    - "server-id = 1"
+    - "log_bin = /var/log/mysql/mysql-bin.log"
+    - "max_binlog_size = 100M"
+    - "relay_log = /var/log/mysql/mysql-relay-bin"
+    - "relay_log_index = /var/log/mysql/mysql-relay-bin.index"
+

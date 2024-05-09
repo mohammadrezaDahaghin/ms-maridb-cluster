@@ -5,57 +5,7 @@
     update_cache: yes
     upgrade: yes
 
-- name: Install Redis Server
+- name: Install mariadb Server
   apt:
-    name: redis-server
+    name: mariadb-server
     state: present
-
-- name: Install Redis Sentinel
-  apt:
-    name: redis-sentinel
-    state: present
-
-- name: Stop sentinel service
-  ansible.builtin.systemd_service:
-    name: redis-sentinel
-    state: stopped
-    enabled: no
-
-- name: Change owner of sentinel.conf file
-  file:
-    path: /etc/redis/sentinel.conf
-    owner: redis
-    group: redis
-
-- name: Change owner of redis-sentinel.log file
-  file:
-    path: /var/log/redis/redis-sentinel.log
-    owner: redis
-    group: redis
-
-- name: Allow everything and enable UFW
-  ufw:
-    state: enabled
-    policy: allow
-
-- name: Set logging
-  ufw:
-    logging: 'on'
-
-- name: Allow port 6379 through UFW
-  community.general.ufw:
-    rule: allow
-    port: 6379
-    proto: tcp
-
-
-- name: Allow port 26379 through UFW
-  community.general.ufw:
-    rule: allow
-    port: 26379
-    proto: tcp
-
-- name: Allow port 22 through UFW
-  ufw:
-    rule: allow
-    name: OpenSSH

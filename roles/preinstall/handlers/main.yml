@@ -1,2 +1,7 @@
 ---
 # handlers file for preinstall
+- name: Restart mariadb service
+  ansible.builtin.systemd:
+    name: mariadb
+    state: restarted
+

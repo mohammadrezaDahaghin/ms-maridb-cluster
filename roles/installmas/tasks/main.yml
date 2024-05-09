@@ -1,0 +1,6 @@
+---
+# tasks file for installmas
+- name: Create replication user
+  ansible.builtin.command:
+    cmd: "mysql -u root -p -e \"CREATE USER 'replication'@'%' IDENTIFIED BY 'password';\""
+

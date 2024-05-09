@@ -6,3 +6,13 @@
   roles:
     - role: preinstall
   gather_facts: no
+
+
+- hosts: slaves
+  remote_user: mrdex
+  become: true
+  become_method: sudo
+  become_user: root
+  roles:
+    - role: installsla
+  gather_facts: no

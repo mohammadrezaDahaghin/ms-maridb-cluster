@@ -6,3 +6,15 @@
   roles:
     - role: preinstall
   gather_facts: no
+  tags: [preinstall]
+
+    
+- hosts: master
+  remote_user: mrdex
+  become: true
+  become_method: sudo
+  become_user: root
+  roles:
+    - role: installmas
+  gather_facts: no
+  tags: [installmas]

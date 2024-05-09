@@ -51,11 +51,17 @@
   debug:
     var: ens37_ip
 
-- name: Replace bind-address in MariaDB config file
-  replace:
+- name: Check if MariaDB config file exists
+  ansible.builtin.stat:
     path: /etc/mysql/mariadb.conf.d/50-server.cnf
-    regexp: 'bind-address            =\s*.*'
-    replace: 'bind-address      ={{ ens37_ip }}'
+  register: mariadb_config_file
+
+- name: Replace bind-address in MariaDB config file
+  ansible.builtin.replace:
+    path: /etc/mysql/mariadb.conf.d/50-server.cnf
+    regexp: 'bind-address\s*=\s*.*'
+    replace: 'bind-address = {{ ens37_ip }}'
+  when: mariadb_config_file.stat.exists == False or mariadb_config_file.stat.mtime == 0
 
 - name: Add additional configurations to MariaDB config file
   ansible.builtin.lineinfile:
@@ -68,4 +74,5 @@
     - "max_binlog_size = 100M"
     - "relay_log = /var/log/mysql/mysql-relay-bin"
     - "relay_log_index = /var/log/mysql/mysql-relay-bin.index"
-
+  when: mariadb_config_file.stat.exists == False or mariadb_config_file.stat.mtime == 0
+  notify: Restart mariadb service

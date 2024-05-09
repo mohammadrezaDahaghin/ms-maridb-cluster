@@ -1,4 +1,7 @@
 # group_vars/all.yaml
 ansible_user: mrdex
 ansible_port: 22
+master_file: "default_value"
+master_position: "default_value"
+replication_password: "password"
 
